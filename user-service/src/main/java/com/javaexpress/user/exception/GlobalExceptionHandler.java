@@ -58,6 +58,17 @@ public class GlobalExceptionHandler {
 		errorAPI.setError(ex.getMessage());
 		return new ResponseEntity<>(errorAPI,HttpStatus.INTERNAL_SERVER_ERROR);
 	}
+	@ExceptionHandler(UserNotFoundException .class)
+	public ResponseEntity<ErrorAPI> handleException(UserNotFoundException  ex) {
+		ErrorAPI errorAPI = new ErrorAPI();
+		errorAPI.setLocalDateTime(LocalDateTime.now());
+		
+		errorAPI.setMessage("External service is currently unavailable.");
+		errorAPI.setStatus(HttpStatus.SERVICE_UNAVAILABLE.getReasonPhrase());
+		errorAPI.setError(ex.getMessage());
+
+		return new ResponseEntity<>(errorAPI, HttpStatus.SERVICE_UNAVAILABLE);
+	}
 
 
 }
