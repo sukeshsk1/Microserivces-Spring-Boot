@@ -1,7 +1,6 @@
 package com.javaexpress.service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanUtils;
@@ -25,18 +24,24 @@ public class CartServiceImpl {
 	@Autowired
 	private CartItemRepository cartItemRepository;
 	
-	@Autowired
-	private UserRestIntegrationService userRestIntegrationService;
+	//@Autowired
+	//private UserRestIntegrationService userRestIntegrationService;
+	
+	//@Autowired
+	//private ProductRestIntegrationService productRestIntegrationService;
 	
 	@Autowired
-	private ProductRestIntegrationService productRestIntegrationService;
+	private ProductFeignIntegrationService productFeignIntegrationService;
+	
+	@Autowired
+	private UserFeignIntegrationService userFeignIntegrationService;
 	
 	public CartItemResponseDTO addToCart(CartItemRequestDTO request) {
 		Long userId = request.getUserId();
 		Long productId = request.getProductId();
 		
-		UserDto userDto = userRestIntegrationService.fetchUser(userId);
-		ProductResponseDTO product = productRestIntegrationService.fetchProduct(productId);
+		UserDto userDto = userFeignIntegrationService.fetchUser(userId);
+		ProductResponseDTO product = productFeignIntegrationService.fetchProduct(productId);
 		// TODO : students - PRODUCT 
 		
 		CartItem cartItem = new CartItem();
@@ -55,40 +60,28 @@ public class CartServiceImpl {
 	}
 	
 	public CartItemResponseDTO updateQuantity(CartItemRequestDTO request) {
-	
-        Optional<CartItem> optionalCartItem = cartItemRepository.findByUserIdAndProductId(
-                request.getUserId(), request.getProductId());
-
-        if (optionalCartItem.isPresent()) {
-            CartItem cartItem = optionalCartItem.get();
-            cartItem.setQuantity(request.getQuantity());
-            CartItem updatedItem = cartItemRepository.save(cartItem);
-
-            UserDto userDto = userRestIntegrationService.fetchUser(request.getUserId());
-            ProductResponseDTO product = productRestIntegrationService.fetchProduct(request.getProductId());
-
-            return mapToDto(updatedItem, userDto, product);
-        } else {
-            log.warn("Cart item not found for userId: {}, productId: {}", request.getUserId(), request.getProductId());
-            return null; // or throw an exception
-        }
+		UserDto userDto = userFeignIntegrationService.fetchUser(request.getUserId());
+		ProductResponseDTO product = productFeignIntegrationService.fetchProduct(request.getProductId());
+		
+		CartItem cartItem = cartItemRepository.findByUserIdAndProductId(request.getUserId(), request.getProductId());
+		cartItem.setQuantity(request.getQuantity());
+		CartItem dbCartItem = cartItemRepository.save(cartItem);
+		return mapToDto(dbCartItem,userDto,product);
 	}
 	
 	public List<CartItemResponseDTO> getUserCart(Long userId) {
-		UserDto userDto = userRestIntegrationService.fetchUser(userId);
-        List<CartItem> cartItems = cartItemRepository.findByUserId(userId);
-
-        return cartItems.stream().map(item -> {
-            ProductResponseDTO product = productRestIntegrationService.fetchProduct(item.getProductId());
-            return mapToDto(item, userDto, product);
-        }).collect(Collectors.toList());
-		}
+		UserDto userDto = userFeignIntegrationService.fetchUser(userId);
+		return cartItemRepository.findByUserId(userId).stream()
+					.map(cart -> {
+						ProductResponseDTO product = productFeignIntegrationService.fetchProduct(cart.getProductId());
+						return mapToDto(cart,userDto,product);
+					})
+					.collect(Collectors.toList());
+	}
 	
 	@Transactional
 	public void removeItem(Long userId,Long productId) {
 		cartItemRepository.deleteByUserIdAndProductId(userId, productId);
 	}
-	
-	
 	
 }
