@@ -8,13 +8,14 @@ import lombok.Setter;
 @Getter
 @Setter
 public class PaymentResponseDTO {
-	
+	 private Long paymentId;
 	private BigDecimal amount;
 	private String status;//Success,Pending,Failed
 	private long orderId;
 	private Long userId;
 	private LocalDateTime payDatetime=LocalDateTime.now();
 	private UserDTO userDTO;
+	private OrderResponseDTO orderResponseDTO;
 	
 
 }
