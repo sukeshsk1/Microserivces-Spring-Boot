@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: eureka-service
+spec:
+  selector:
+    app: eurekapod
+  type: LoadBalancer # u can access application using localhost in local system
+  ports:
+    - protocol: TCP
+      port: 8761 #any port number u can provide 
+      targetPort: 8761 # container port number

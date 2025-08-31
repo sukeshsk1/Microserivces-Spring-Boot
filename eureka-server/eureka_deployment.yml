@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eureka-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: eurekapod
+  template:
+    metadata:
+      labels:
+        app: eurekapod
+    spec:
+      containers:
+      - name: eurekacontainer
+        image: sukeshsk/eureka-server:1.0.0
+        ports:
+        - containerPort: 8761

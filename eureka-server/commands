@@ -1,0 +1,14 @@
+kubectl apply -f fileName
+
+kubectl get deployments
+kubectl get pods
+kubectl get rs
+kubectl get svc
+
+kubectl logs <pod-Name>
+kubectl get pods -o wide
+
+
+kubectl delete pod <pod-name>
+
+kubectl get pods --show-labels
